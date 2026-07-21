@@ -1,0 +1,8 @@
+{
+  "name": "Remix: iOS Screen Customizer",
+  "description": "An interactive, high-fidelity iPhone home screen and widget customizer. Personalize your layout with glassmorphic widgets, Polaroid photo reels, custom backgrounds, and custom app icons.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
