@@ -43,13 +43,43 @@ export default function App() {
   const [isFullscreenDisplay, setIsFullscreenDisplay] = useState<boolean>(false);
   const [alwaysFullscreen, setAlwaysFullscreen] = useState<boolean>(false);
 
-  // Initialize alwaysFullscreen from localStorage on mount
+  // Initialize alwaysFullscreen from query parameters (e.g. HTML link on Vercel) or localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem('iscreen_always_fullscreen');
-    if (saved === 'true') {
+    const searchParams = new URLSearchParams(window.location.search);
+    const hasFullscreenQuery = 
+      searchParams.get('fullscreen') === 'true' ||
+      searchParams.get('fullscreen') === '1' ||
+      searchParams.has('fullscreen') ||
+      searchParams.get('mode') === 'fullscreen' ||
+      searchParams.get('view') === 'fullscreen' ||
+      searchParams.get('standalone') === 'true' ||
+      searchParams.get('open') === 'fullscreen' ||
+      searchParams.get('launch') === 'fullscreen' ||
+      searchParams.get('from') === 'html' ||
+      searchParams.get('html') === 'true' ||
+      searchParams.get('redirect') === 'true' ||
+      searchParams.get('direct') === 'true' ||
+      searchParams.get('view') === 'true';
+
+    const isFromHtmlReferrer = 
+      Boolean(document.referrer) && (
+        document.referrer.endsWith('.html') || 
+        document.referrer.includes('file://') ||
+        document.referrer.includes('.html?') ||
+        document.referrer.includes('fullscreen=true')
+      );
+
+    if (hasFullscreenQuery || isFromHtmlReferrer) {
       setAlwaysFullscreen(true);
       setIsFullscreenDisplay(true);
       setIsEditMode(false);
+    } else {
+      const saved = localStorage.getItem('iscreen_always_fullscreen');
+      if (saved === 'true') {
+        setAlwaysFullscreen(true);
+        setIsFullscreenDisplay(true);
+        setIsEditMode(false);
+      }
     }
   }, []);
 

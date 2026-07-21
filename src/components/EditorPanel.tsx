@@ -22,7 +22,10 @@ import {
   Eye,
   EyeOff,
   Clipboard,
-  Maximize
+  Maximize,
+  Copy,
+  Check,
+  ExternalLink
 } from 'lucide-react';
 
 // Helper to compress/resize custom uploaded image files to prevent LocalStorage quota crashes
@@ -121,6 +124,114 @@ export function EditorPanel({
   const [showIconPicker, setShowIconPicker] = useState(false);
   const [bgInput, setBgInput] = useState(backgroundUrl);
   const [customPhotoInput, setCustomPhotoInput] = useState('');
+  const [copiedVercelLink, setCopiedVercelLink] = useState(false);
+
+  const handleCopyVercelFullscreenLink = () => {
+    const currentOrigin = window.location.origin;
+    const fullscreenUrl = `${currentOrigin}/?fullscreen=true`;
+    navigator.clipboard.writeText(fullscreenUrl);
+    setCopiedVercelLink(true);
+    setTimeout(() => setCopiedVercelLink(false), 2500);
+  };
+
+  const handleDownloadLauncherHtml = () => {
+    const htmlContent = `<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>iPhone iScreen - Schermo Intero</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #0b0f19;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+    }
+    .card {
+      text-align: center;
+      padding: 2.2rem 1.8rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      backdrop-filter: blur(24px);
+      max-width: 380px;
+      width: 90%;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+    }
+    .icon-box {
+      width: 68px;
+      height: 68px;
+      background: linear-gradient(135deg, #0d9488, #0284c7);
+      border-radius: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.25rem;
+      box-shadow: 0 10px 25px -5px rgba(13, 148, 136, 0.4);
+    }
+    h1 { font-size: 1.35rem; font-weight: 700; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+    p { font-size: 0.88rem; color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.45; }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 0.9rem 1.5rem;
+      background: #0284c7;
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      border-radius: 14px;
+      transition: all 0.2s ease;
+      border: none;
+      cursor: pointer;
+    }
+    .btn:hover { background: #0369a1; transform: translateY(-1px); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon-box">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 2 0 0 0-2 2v3m18 0V5a2 2 2 0 0 0-2-2h-3m0 18h3a2 2 2 0 0 0 2-2v-3M3 16v3a2 2 2 0 0 0 2 2h3"/></svg>
+    </div>
+    <h1>iPhone iScreen</h1>
+    <p>Apertura automatica su Vercel in modalità Schermo Intero in corso...</p>
+    <a id="launchBtn" href="https://ios-wallpaper.vercel.app/?fullscreen=true" class="btn">
+      Apri a Schermo Intero
+    </a>
+  </div>
+
+  <script>
+    const targetUrl = "https://ios-wallpaper.vercel.app/?fullscreen=true";
+    window.location.replace(targetUrl);
+    document.getElementById('launchBtn').addEventListener('click', function() {
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+    });
+  </script>
+</body>
+</html>`;
+
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'apri-schermo-intero-vercel.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const iconFileInputRef = useRef<HTMLInputElement>(null);
@@ -751,6 +862,36 @@ export function EditorPanel({
           }
         </span>
       </button>
+
+      {/* Vercel HTML Link Direct Fullscreen Launcher Helper */}
+      <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-2.5 mb-3">
+        <div className="flex items-center justify-between text-[11px] mb-1.5">
+          <span className="font-semibold text-slate-300 flex items-center gap-1">
+            <ExternalLink size={12} className="text-cyan-400" />
+            Link Vercel Schermo Intero
+          </span>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={handleDownloadLauncherHtml}
+              className="text-[10px] font-bold text-slate-200 hover:text-white bg-slate-800 hover:bg-slate-700 border border-slate-700 px-2 py-0.5 rounded-md flex items-center gap-1 active:scale-95 transition-all cursor-pointer"
+              title="Scarica file HTML pronto da aprire"
+            >
+              <Download size={11} className="text-cyan-400" />
+              Scarica HTML
+            </button>
+            <button
+              onClick={handleCopyVercelFullscreenLink}
+              className="text-[10px] font-bold text-cyan-400 hover:text-cyan-300 bg-cyan-950/60 border border-cyan-800/50 px-2 py-0.5 rounded-md flex items-center gap-1 active:scale-95 transition-all cursor-pointer"
+            >
+              {copiedVercelLink ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
+              {copiedVercelLink ? 'Copiato!' : 'Copia Link'}
+            </button>
+          </div>
+        </div>
+        <p className="text-[10px] text-slate-400 leading-tight">
+          Utilizzando l'URL con <code className="text-cyan-300 bg-slate-950 px-1 py-0.5 rounded font-mono">?fullscreen=true</code> (es. dal file HTML scaricabile sopra o un reindirizzamento), l'app si aprirà direttamente a schermo intero solo per quel link.
+        </p>
+      </div>
 
       {/* Standalone Fully Immersive Offline Downloader & Importer Action Buttons */}
       <div className="grid grid-cols-5 gap-2 mb-3">
